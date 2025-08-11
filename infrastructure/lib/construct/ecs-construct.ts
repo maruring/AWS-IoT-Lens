@@ -6,6 +6,8 @@ import { aws_ec2 as ec2 } from 'aws-cdk-lib';
 import { aws_ecs as ecs } from 'aws-cdk-lib';
 import { aws_ecs_patterns as ecs_patterns } from 'aws-cdk-lib';
 import { aws_ecr as ecr } from 'aws-cdk-lib';
+import { aws_dynamodb as dynamodb } from 'aws-cdk-lib';
+import { aws_iam as iam } from 'aws-cdk-lib';
 
 export interface EcsConstructProps extends cdk.StackProps {
     myVpc: ec2.Vpc;
@@ -18,6 +20,8 @@ export interface EcsConstructProps extends cdk.StackProps {
     taskMemory: number;
     containerCpu: number;
     containerMemory: number;
+    deviceTabel: dynamodb.Table;
+    sensorDataTable: dynamodb.Table;
 };
 
 export class EcsConstruct extends Construct {
@@ -39,6 +43,22 @@ export class EcsConstruct extends Construct {
             props.repositoryName
         );
 
+        // タスク実行ロール
+        const fargateTaskExecRole = new iam.Role(this, `${id}-EcsTaskExecRole`, {
+            roleName: `${props.envNameUpper}^${props.projectName}-EcsTaskExec`,
+            assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com')
+        });
+        fargateTaskExecRole.addToPolicy(
+            new iam.PolicyStatement(
+                {
+                    actions: [
+                        'dynamodb:*'
+                    ],
+                    resources: [props.deviceTabel.tableArn, props.sensorDataTable.tableArn]
+                }
+            )
+        );
+
         // Fargate and ALB
         const fargateService = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `${id}-FargateSerivice`, {
             cluster: cluster,
@@ -48,7 +68,8 @@ export class EcsConstruct extends Construct {
             publicLoadBalancer: true,
             loadBalancerName: `${props.envNameUpper}-${props.projectName}-AppALB`,
             taskImageOptions: {
-                image: ecs.ContainerImage.fromEcrRepository(ecrRepository, `${props.imageTag}`)
+                image: ecs.ContainerImage.fromEcrRepository(ecrRepository, `${props.imageTag}`),
+                taskRole: fargateTaskExecRole
             }
         });
 

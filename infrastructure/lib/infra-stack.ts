@@ -29,6 +29,12 @@ export class InfraStack extends cdk.Stack {
       envNameUpper: props.envNameUpper
     });
 
+    const dynamodb = new DynamodbConstruct(this, `${id}-dynamodb`, {
+      envName: props.envName,
+      envNameUpper: props.envNameUpper,
+      projectName: props.projectName
+    });
+
     const ecs = new EcsConstruct(this, `${id}-ecs`, {
       myVpc: vpc.myVpc,
       projectName: props.projectName,
@@ -39,13 +45,9 @@ export class InfraStack extends cdk.Stack {
       taskCpu: props.taskCpu,
       taskMemory: props.taskMemory,
       containerCpu: props.containerCpu,
-      containerMemory: props.containerMemory
-    });
-
-    const dynamodb = new DynamodbConstruct(this, `${id}-dynamodb`, {
-      envName: props.envName,
-      envNameUpper: props.envNameUpper,
-      projectName: props.projectName
+      containerMemory: props.containerMemory,
+      deviceTabel: dynamodb.deviceTable,
+      sensorDataTable: dynamodb.sensorDataTable,
     });
 
   }
