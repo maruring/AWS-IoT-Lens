@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 
 import { VpcConstruct } from './construct/vpc-construct';
 import { EcsConstruct } from './construct/ecs-construct';
+import { DynamodbConstruct } from './construct/dynamo-construct';
 
 export interface InfraStackProps extends cdk.StackProps {
   vpcCidr: string;
@@ -39,6 +40,12 @@ export class InfraStack extends cdk.Stack {
       taskMemory: props.taskMemory,
       containerCpu: props.containerCpu,
       containerMemory: props.containerMemory
+    });
+
+    const dynamodb = new DynamodbConstruct(this, `${id}-dynamodb`, {
+      envName: props.envName,
+      envNameUpper: props.envNameUpper,
+      projectName: props.projectName
     });
 
   }
