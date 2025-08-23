@@ -1,0 +1,394 @@
+openapi: 3.0.3
+info:
+  title: IoT Device Management API
+  description: IoTデバイス管理システムのAPI仕様書
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+  - url: https://staging-api.example.com/v1
+    description: Staging server
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: ユーザー登録
+      description: 新規ユーザーを登録します
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - Email
+                - Password
+                - Username
+              properties:
+                Email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                Password:
+                  type: string
+                  minLength: 8
+                  example: "password123"
+                Username:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                  example: "johndoe"
+      responses:
+        '201':
+          description: ユーザー登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  UserId:
+                    type: string
+                    example: "user-123456"
+                  Email:
+                    type: string
+                    example: "user@example.com"
+                  Username:
+                    type: string
+                    example: "johndoe"
+                  CreatedAt:
+                    type: string
+                    format: date-time
+                    example: "2025-01-15T10:30:00Z"
+        '400':
+          description: リクエストが不正です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: ユーザーが既に存在します
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: ログイン
+      description: ユーザーログインを行います
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - Email
+                - Password
+              properties:
+                Email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                Password:
+                  type: string
+                  example: "password123"
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  AccessToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  RefreshToken:
+                    type: string
+                    example: "refresh_token_here"
+                  ExpiresIn:
+                    type: integer
+                    example: 3600
+                  User:
+                    type: object
+                    properties:
+                      UserId:
+                        type: string
+                        example: "user-123456"
+                      Email:
+                        type: string
+                        example: "user@example.com"
+                      Username:
+                        type: string
+                        example: "johndoe"
+        '401':
+          description: 認証に失敗しました
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: リクエストが不正です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /devices:
+    get:
+      tags:
+        - Devices
+      summary: デバイス情報一覧取得
+      description: ユーザーに紐づくデバイス情報の一覧を取得します
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: 取得件数の上限
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: nextToken
+          in: query
+          description: ページネーション用のトークン
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: デバイス一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  NextToken:
+                    type: string
+                    nullable: true
+                    example: "next_page_token"
+                  Count:
+                    type: integer
+                    example: 15
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /devices/{deviceId}/sensor-data:
+    get:
+      tags:
+        - Sensor Data
+      summary: センサーデータ一覧取得
+      description: 指定されたデバイスのセンサーデータを取得します。取得時期を月、日、時間単位で指定可能です
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          description: デバイスID
+          schema:
+            type: string
+            example: "device-123456"
+        - name: startDate
+          in: query
+          required: true
+          description: 取得開始日時(ISO 8601形式)
+          schema:
+            type: string
+            format: date-time
+            example: "2025-01-01T00:00:00Z"
+        - name: endDate
+          in: query
+          required: true
+          description: 取得終了日時(ISO 8601形式)
+          schema:
+            type: string
+            format: date-time
+            example: "2025-01-31T23:59:59Z"
+        - name: granularity
+          in: query
+          required: false
+          description: データの粒度
+          schema:
+            type: string
+            enum: [hour, day, month]
+            default: hour
+        - name: limit
+          in: query
+          description: 取得件数の上限
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - name: nextToken
+          in: query
+          description: ページネーション用のトークン
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: センサーデータ取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  SensorData:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SensorData'
+                  NextToken:
+                    type: string
+                    nullable: true
+                    example: "next_page_token"
+                  Count:
+                    type: integer
+                    example: 50
+                  Granularity:
+                    type: string
+                    example: "hour"
+        '400':
+          description: リクエストパラメータが不正です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: アクセス権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: デバイスが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Device:
+      type: object
+      properties:
+        DeviceId:
+          type: string
+          example: "device-123456"
+        DeviceName:
+          type: string
+          example: "Temperature Sensor 01"
+        DeviceType:
+          type: string
+          example: "temperature_sensor"
+        Status:
+          type: string
+          enum: [active, inactive, maintenance]
+          example: "active"
+        CreatedAt:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+        UpdatedAt:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+        LastSeenAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-01-15T10:30:00Z"
+
+    SensorData:
+      type: object
+      properties:
+        DeviceId:
+          type: string
+          example: "device-123456"
+        Timestamp:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+        Temperature:
+          type: number
+          format: float
+          nullable: true
+          example: 23.5
+        Humidity:
+          type: number
+          format: float
+          nullable: true
+          example: 65.2
+        Pressure:
+          type: number
+          format: float
+          nullable: true
+          example: 1013.25
+        BatteryLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+          nullable: true
+          example: 85
+
+    Error:
+      type: object
+      properties:
+        Code:
+          type: string
+          example: "INVALID_REQUEST"
+        Message:
+          type: string
+          example: "リクエストが不正です"
+        Details:
+          type: string
+          nullable: true
+          example: "Email field is required"
+
+tags:
+  - name: Authentication
+    description: 認証関連のAPI
+  - name: Devices
+    description: デバイス管理関連のAPI
+  - name: Sensor Data
+    description: センサーデータ関連のAPI
