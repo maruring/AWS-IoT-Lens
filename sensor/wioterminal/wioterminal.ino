@@ -6,7 +6,7 @@
 
 AWS_IOT hornbill;
 
-static auto constexpr TOPIC_NAME = "topic/sensor/data";
+static auto constexpr TOPIC_NAME = "topic/device/data";
 
 int msgReceived = 0;
 char reportpayload[512];
@@ -15,15 +15,6 @@ char desiredPayload[512];
 
 // 測定周期 
 int period = 5000;
-
-void mySubCallBackHandler(char *topicName, int payloadLen, char *payLoad)
-{
-    strncpy(rcvdPayload, payLoad, payloadLen);
-    Serial.print("Received. topic:");
-    Serial.println(topicName);
-    rcvdPayload[payloadLen] = 0;
-    msgReceived = 1;
-}
 
 void publishMessage()
 {
@@ -47,7 +38,7 @@ void publishMessage()
     Serial.println(jsonBuffer);
   }
   else {
-  Serial.println("Publish Failed");
+    Serial.println("Publish Failed");
   }
 }
 
