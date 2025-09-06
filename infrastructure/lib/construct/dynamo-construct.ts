@@ -24,7 +24,11 @@ export class DynamodbConstruct extends Construct {
         const deviceTable = new dynamodb.Table(this, `${id}-DeviceTable`, {
             tableName: `${props.envNameUpper}-${props.projectName}-DeviceTable`,
             partitionKey: {
-                name: 'id',
+                name: 'departmentId',
+                type: dynamodb.AttributeType.STRING
+            },
+            sortKey: {
+                name: 'deviceId',
                 type: dynamodb.AttributeType.STRING
             },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -43,10 +47,10 @@ export class DynamodbConstruct extends Construct {
                 type: dynamodb.AttributeType.STRING
             },
             sortKey: {
-                name: 'time',
+                name: 'timestamp',
                 type: dynamodb.AttributeType.STRING
             },
-                        billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             deletionProtection: false, // ToDo: 必要に応じてはtrueにする
             removalPolicy: RemovalPolicy.DESTROY // ToDo: 必要に応じてRETAINにする
         });

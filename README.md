@@ -11,7 +11,7 @@ AWSを活用してIoTデバイスから送信されたデータを保存して�
 | テストフレームワーク | Jest | - |
 | データベース | Amazon DynamoDB | - |
 | コンピューティング | AWS ECS on AWS Fargate | - |
-| フレームワーク | Express | - |
+| フレームワーク | NestJS | - |
 | 認証、ユーザーディレクトリ | Amazon Cognito user pools | - |
 | パッケージマネージャー | npm | - |
 | リンター/フォーマッター | Biome.js | - |
