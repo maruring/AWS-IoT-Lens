@@ -148,10 +148,17 @@ paths:
       tags:
         - Devices
       summary: デバイス情報一覧取得
-      description: ユーザーに紐づくデバイス情報の一覧を取得します
+      description: 部署に紐づくデバイス情報の一覧を取得します
       security:
         - BearerAuth: []
       parameters:
+        - name: departmentId
+          in: query
+          description: 部署ID
+          required: true
+          schema:
+            type: string
+            format: uuid
         - name: limit
           in: query
           description: 取得件数の上限
