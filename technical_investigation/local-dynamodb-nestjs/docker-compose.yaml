@@ -1,0 +1,47 @@
+version: '3.8'
+services:
+  dynamodb:
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb-local
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    volumes:
+      - "./docker/dynamodb:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
+
+  aws-cli:
+    depends_on:
+      - dynamodb
+    links:
+      - "dynamodb"
+    image: amazon/aws-cli
+    container_name: awscli-local
+    ports:
+      - "8080:8080"
+    entrypoint: [""]
+    tty: true
+    environment:
+      AWS_ACCESS_KEY_ID: 'dummy_access_key'
+      AWS_SECRET_ACCESS_KEY: 'dummy_secret_key'
+      REGION: 'ap-northeast-1'
+    command:
+      - /bin/sh
+  
+  nest-js:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nest-js-local
+    # コンテナが停止した場合に自動で再起動する設定
+    restart: always
+    # ポートのマッピング（ホスト側:コンテナ側）
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      # ホストのカレントディレクトリをコンテナの作業ディレクトリにマウント
+      - .:/usr/src/app
+      # node_modulesだけはコンテナ側のものを使用する設定
+      - /usr/src/app/node_modules
