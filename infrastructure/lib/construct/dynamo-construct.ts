@@ -22,7 +22,7 @@ export class DynamodbConstruct extends Construct {
          */
 
         const deviceTable = new dynamodb.Table(this, `${id}-DeviceTable`, {
-            tableName: `${props.envNameUpper}-${props.projectName}-DeviceTable`,
+            tableName: `${props.envNameUpper}-${props.projectName}-Device`,
             partitionKey: {
                 name: 'departmentId',
                 type: dynamodb.AttributeType.STRING
@@ -41,7 +41,7 @@ export class DynamodbConstruct extends Construct {
          * センサーデータテーブル
          */
         const sensorDataTable = new dynamodb.Table(this, `${id}-SensorDataTable`, {
-            tableName: `${props.envNameUpper}-${props.projectName}-SensorDataTable`,
+            tableName: `${props.envNameUpper}-${props.projectName}-SensorData`,
             partitionKey: {
                 name: 'device_id',
                 type: dynamodb.AttributeType.STRING

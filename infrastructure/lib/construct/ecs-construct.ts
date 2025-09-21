@@ -45,7 +45,7 @@ export class EcsConstruct extends Construct {
 
         // タスク実行ロール
         const fargateTaskExecRole = new iam.Role(this, `${id}-EcsTaskExecRole`, {
-            roleName: `${props.envNameUpper}^${props.projectName}-EcsTaskExec`,
+            roleName: `${props.envNameUpper}-${props.projectName}-EcsTaskExec`,
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com')
         });
         fargateTaskExecRole.addToPolicy(
@@ -70,7 +70,7 @@ export class EcsConstruct extends Construct {
             taskImageOptions: {
                 image: ecs.ContainerImage.fromEcrRepository(ecrRepository, `${props.imageTag}`),
                 taskRole: fargateTaskExecRole
-            }
+            },
         });
 
         this.loadBalancerDnsName = fargateService.loadBalancer.loadBalancerDnsName;
