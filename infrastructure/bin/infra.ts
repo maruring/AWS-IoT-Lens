@@ -36,6 +36,7 @@ new InfraStack(
     taskCpu: appParameter.taskCpu,
     taskMemory: appParameter.taskMemory,
     containerCpu: appParameter.containerCpu,
-    containerMemory: appParameter.containerMemory
+    containerMemory: appParameter.containerMemory,
+    logLevel: appParameter.logLevel
   }
 );

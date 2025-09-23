@@ -22,6 +22,7 @@ export interface EcsConstructProps extends cdk.StackProps {
     containerMemory: number;
     deviceTabel: dynamodb.Table;
     sensorDataTable: dynamodb.Table;
+    logLevel: string;
 };
 
 export class EcsConstruct extends Construct {
@@ -45,7 +46,7 @@ export class EcsConstruct extends Construct {
 
         // タスク実行ロール
         const fargateTaskExecRole = new iam.Role(this, `${id}-EcsTaskExecRole`, {
-            roleName: `${props.envNameUpper}^${props.projectName}-EcsTaskExec`,
+            roleName: `${props.envNameUpper}-${props.projectName}-EcsTaskExec`,
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com')
         });
         fargateTaskExecRole.addToPolicy(
@@ -61,6 +62,7 @@ export class EcsConstruct extends Construct {
 
         // Fargate and ALB
         const fargateService = new ecs_patterns.ApplicationLoadBalancedFargateService(this, `${id}-FargateSerivice`, {
+            serviceName: `${props.envNameUpper}-${props.projectName}-ApiService`,
             cluster: cluster,
             cpu: props.taskCpu,
             memoryLimitMiB: props.taskMemory,
@@ -69,8 +71,26 @@ export class EcsConstruct extends Construct {
             loadBalancerName: `${props.envNameUpper}-${props.projectName}-AppALB`,
             taskImageOptions: {
                 image: ecs.ContainerImage.fromEcrRepository(ecrRepository, `${props.imageTag}`),
-                taskRole: fargateTaskExecRole
-            }
+                taskRole: fargateTaskExecRole,
+                containerName: 'iot-lens-api',
+                containerPort: 3000,
+                environment: {
+                    NODE_ENV: props.envName,
+                    DEVICE_TABLE: props.deviceTabel.tableName,
+                    SENSOR_DATA_TABLE: props.sensorDataTable.tableName,
+                    LOG_LEVEL: props.logLevel
+                }
+            },
+        });
+
+        // ヘルスチェックの設定
+        fargateService.targetGroup.configureHealthCheck({
+            path: '/health',
+            healthyHttpCodes: '200',
+            interval: cdk.Duration.seconds(30),
+            timeout: cdk.Duration.seconds(5),
+            healthyThresholdCount: 2,
+            unhealthyThresholdCount: 3
         });
 
         this.loadBalancerDnsName = fargateService.loadBalancer.loadBalancerDnsName;

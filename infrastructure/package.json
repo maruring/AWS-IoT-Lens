@@ -2,13 +2,18 @@
   "name": "infrastructure",
   "version": "0.1.0",
   "bin": {
-    "infrastructure": "bin/infrastructure.js"
+    "infrastructure": "bin/infra.js"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy-all:dev": "cdk deploy --all -c environment=dev",
+    "deploy-infra:dev": "cdk deploy Dev-iot-lens-Infra-Stack  -c environment=dev",
+    "deploy-ecr:dev": "cdk deploy Dev-iot-lens-Ecr-Stack  -c environment=dev",
+    "destroy-all:dev": "cdk destroy --all -c environment=dev",
+    "destroy-infra:dev": "cdk destroy Dev-iot-lens-Infra-Stack  -c environment=dev"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
