@@ -72,6 +72,7 @@ export class EcsConstruct extends Construct {
             taskImageOptions: {
                 image: ecs.ContainerImage.fromEcrRepository(ecrRepository, `${props.imageTag}`),
                 taskRole: fargateTaskExecRole,
+                containerName: 'iot-lens-api',
                 containerPort: 3000,
                 environment: {
                     NODE_ENV: props.envName,
