@@ -1,15 +1,6 @@
 // Deviceテーブルとの処理
 import { Injectable } from '@nestjs/common';
-import {
-    DynamoDBClient,
-    PutItemCommand,
-    GetItemCommand,
-    DeleteItemCommand,
-    GetItemCommandInput,
-    QueryCommand,
-    QueryCommandInput,
-} from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import { QueryCommand, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 
 import { DynamoDBClinetProvider } from './dynamodb.provider';
 import { UtilsService } from 'src/utils/utils.module';
@@ -39,7 +30,7 @@ export class DeviceRepository {
             TableName: this.deviceTableName,
             KeyConditionExpression: 'departmentId = :deptId',
             ExpressionAttributeValues: {
-                ':deptId': { S: departmentId },
+                ':deptId': departmentId,
             },
         };
         console.debug('getDevices QueryParams', params);
@@ -51,10 +42,10 @@ export class DeviceRepository {
         }
 
         const devices: DeviceData[] = response.Items.map((item: any) => ({
-            departmentId: item.departmentId?.S || '',
-            departmentName: item.departmentName?.S || '',
-            deviceId: item.deviceId?.S || '',
-            deviceName: item.deviceName?.S || '',
+            departmentId: item.departmentId ?? '',
+            departmentName: item.departmentName ?? '',
+            deviceId: item.deviceId ?? '',
+            deviceName: item.deviceName ?? '',
         }));
 
         return devices;

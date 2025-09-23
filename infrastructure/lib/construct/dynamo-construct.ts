@@ -43,7 +43,7 @@ export class DynamodbConstruct extends Construct {
         const sensorDataTable = new dynamodb.Table(this, `${id}-SensorDataTable`, {
             tableName: `${props.envNameUpper}-${props.projectName}-SensorData`,
             partitionKey: {
-                name: 'device_id',
+                name: 'deviceId',
                 type: dynamodb.AttributeType.STRING
             },
             sortKey: {

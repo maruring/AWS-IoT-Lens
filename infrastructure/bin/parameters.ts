@@ -25,7 +25,7 @@ const appParameters: { [key in EnvName]: AppParameter } = {
     envName: "dev",
     envNameUpper: "Dev",
     vpcCidr: "10.100.0.0/16",
-    imageTag: "dev-0.6", // ToDo: 後で変更
+    imageTag: "dev-0.8", // ToDo: 後で変更
     repositoryName: "iot-lens",
     taskCpu: 256,
     taskMemory: 512,
