@@ -16,6 +16,7 @@ export interface InfraStackProps extends cdk.StackProps {
   taskMemory: number;
   containerCpu: number;
   containerMemory: number;
+  logLevel: string;
 };
 
 export class InfraStack extends cdk.Stack {
@@ -48,6 +49,7 @@ export class InfraStack extends cdk.Stack {
       containerMemory: props.containerMemory,
       deviceTabel: dynamodb.deviceTable,
       sensorDataTable: dynamodb.sensorDataTable,
+      logLevel: props.logLevel,
     });
 
   }

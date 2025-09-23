@@ -1,20 +1,14 @@
 import { Injectable, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService, ConfigModule } from '@nestjs/config';
 
 @Injectable()
 export class UtilsService {
-    private readonly projectgName: string;
-    private readonly envName: string;
-    private readonly envNameUpper: string;
     private readonly deviceTableName: string;
     private readonly sensorDataTableName: string;
 
     constructor(private configService: ConfigService){
-        this.projectgName = configService.get<string>('PROJECT_NAME')!;
-        this.envName = configService.get<string>('NODE_ENV')!;
-        this.envNameUpper = this.getUpperEnvName(this.envName);
-        this.deviceTableName = configService.get<string>('DEVICE_TABLE_NAME')!;
-        this.sensorDataTableName = configService.get<string>('SensorDataTable')!;
+        this.deviceTableName = configService.get<string>('DEVICE_TABLE')!;
+        this.sensorDataTableName = configService.get<string>('SENSOR_DATA_TABLE')!;
     };
 
     /**
@@ -22,7 +16,7 @@ export class UtilsService {
      * @returns デバイステーブル名
      */
     getDeviceTableName(): string {
-        return `${this.envNameUpper}-${this.projectgName}-${this.deviceTableName}`
+        return this.deviceTableName;
     };
 
     /**
@@ -30,7 +24,7 @@ export class UtilsService {
      * @returns センサーデータテーブル名
      */
     getSensorDataTableName(): string {
-        return `${this.envNameUpper}-${this.projectgName}-${this.sensorDataTableName}`
+        return this.sensorDataTableName;
     };
 
     /**
@@ -44,6 +38,7 @@ export class UtilsService {
 }
 
 @Module({
+    imports: [ConfigModule],
     providers: [UtilsService],
     exports: [UtilsService]
 })

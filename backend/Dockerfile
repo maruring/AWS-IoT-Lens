@@ -1,23 +1,23 @@
-# Node.js 18のベースイメージを使用
-FROM node:18-alpine
+ARG NODE_ENV=prod
+FROM node:20-alpine3.17
 
-# 作業ディレクトリを設定
+# 環境変数の設定
+ENV NODE_ENV=$NODE_ENV
+
 WORKDIR /app
-
-# package.jsonとpackage-lock.jsonをコピー
 COPY package*.json ./
+RUN npm ci
 
-# 依存関係をインストール
-RUN npm ci --only=production
-
-# アプリケーションのソースコードをコピー
 COPY . .
-
-# アプリケーションをビルド
 RUN npm run build
-
-# ポート3000を公開
+RUN npm ci --only=production && npm cache clean --force
 EXPOSE 3000
 
-# アプリケーションを起動
+# ヘルスチェック用のcurlをインストール
+RUN apk add --no-cache curl
+
+# ヘルスチェックの設定
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#   CMD curl -f http://localhost:3000/health || exit 1
+
 CMD ["npm", "run", "start:prod"]

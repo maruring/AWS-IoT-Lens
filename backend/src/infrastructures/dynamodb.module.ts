@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { DynamoDBClinetProvider } from './dynamodb.provider';
-import { UtilsService } from 'src/utils/utils.module';
+import { UtilsModule } from '../utils/utils.module';
 
 @Module({
-    providers: [DynamoDBClinetProvider, UtilsService],
+    imports: [UtilsModule],
+    providers: [DynamoDBClinetProvider],
     exports: [DynamoDBClinetProvider],
 })
 
-export class DynamoDBClientModule {}
+export class DynamoDBModule {}
